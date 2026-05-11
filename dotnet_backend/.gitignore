@@ -1,0 +1,15 @@
+## .NET build artifacts
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.nupkg
+*.snupkg
+
+## Secrets / local overrides
+appsettings.local.json
+appsettings.*.local.json
+
+## Test results
+TestResults/
