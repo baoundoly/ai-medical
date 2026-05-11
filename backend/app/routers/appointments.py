@@ -24,7 +24,6 @@ def _assign_token(db: Session, appointment: Appointment) -> int:
     """Assign a queue token. Emergency appointments get token 0."""
     if appointment.appointment_type == "emergency":
         return 0
-    date_str = appointment.scheduled_at.date()
     existing = (
         db.query(Appointment)
         .filter(

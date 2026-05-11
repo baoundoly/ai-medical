@@ -24,14 +24,13 @@ def send_notification(
     payload = {
         "recipient_id": recipient_id,
         "title": title,
-        "body": body,
         "channel": channel,
         "data": data or {},
         "sent_at": datetime.utcnow().isoformat(),
         "status": "sent",
     }
-    # TODO: replace with real delivery mechanism
-    print(f"[NOTIFICATION] {channel.upper()} → user {recipient_id}: {title} | {body}")
+    # TODO: replace with real delivery mechanism (email/SMS/push)
+    print(f"[NOTIFICATION] {channel.upper()} → user {recipient_id}: {title}")
     return payload
 
 

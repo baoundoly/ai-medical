@@ -48,8 +48,9 @@ def list_medicines(
 ):
     query = db.query(Medicine).filter(Medicine.tenant_id == current_user.tenant_id)
     if search:
+        safe = search.replace("%", r"\%").replace("_", r"\_")
         query = query.filter(
-            Medicine.name.ilike(f"%{search}%") | Medicine.generic_name.ilike(f"%{search}%")
+            Medicine.name.ilike(f"%{safe}%") | Medicine.generic_name.ilike(f"%{safe}%")
         )
     if low_stock:
         query = query.filter(Medicine.stock_quantity <= Medicine.reorder_level)

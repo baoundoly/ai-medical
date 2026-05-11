@@ -85,9 +85,10 @@ def test_double_sign_blocked(client, doctor_user, doctor_headers):
     }, headers=doctor_headers)
     presc_id = create_resp.json()["id"]
 
-    client.post(f"/api/v1/prescriptions/{presc_id}/sign",
-                json={"signature_method": "password", "credential": "x"},
-                headers=doctor_headers)
+    sign_resp1 = client.post(f"/api/v1/prescriptions/{presc_id}/sign",
+                             json={"signature_method": "password", "credential": "x"},
+                             headers=doctor_headers)
+    assert sign_resp1.status_code == 200, "First sign should succeed"
     # Second sign should fail
     resp2 = client.post(f"/api/v1/prescriptions/{presc_id}/sign",
                         json={"signature_method": "password", "credential": "x"},

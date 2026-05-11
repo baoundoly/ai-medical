@@ -6,7 +6,7 @@ import os
 
 # Point to SQLite BEFORE any app modules are imported so that
 # pydantic-settings reads the test DATABASE_URL.
-os.environ.setdefault("DATABASE_URL", "sqlite://")
+os.environ["DATABASE_URL"] = "sqlite://"
 
 import pytest
 from fastapi.testclient import TestClient

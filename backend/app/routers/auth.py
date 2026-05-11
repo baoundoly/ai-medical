@@ -25,7 +25,7 @@ def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     if user.mfa_enabled:
         raise HTTPException(
-            status_code=status.HTTP_202_ACCEPTED,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="MFA verification required",
             headers={"X-MFA-Required": "true"},
         )

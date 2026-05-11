@@ -66,8 +66,9 @@ def list_patients(
         Patient.is_active == True,
     )
     if search:
+        safe = search.replace("%", r"\%").replace("_", r"\_")
         query = query.filter(
-            Patient.name.ilike(f"%{search}%") | Patient.patient_uid.ilike(f"%{search}%")
+            Patient.name.ilike(f"%{safe}%") | Patient.patient_uid.ilike(f"%{safe}%")
         )
     total = query.count()
     items = query.order_by(Patient.id.desc()).offset(skip).limit(limit).all()
