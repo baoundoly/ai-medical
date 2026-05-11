@@ -1,4 +1,4 @@
-# Python
+# ─── Python (ai_layer + backend) ────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
@@ -7,8 +7,6 @@ __pycache__/
 *.so
 *.egg
 *.egg-info/
-dist/
-build/
 .eggs/
 .pytest_cache/
 .mypy_cache/
@@ -21,19 +19,50 @@ venv/
 env/
 ENV/
 
-# Environment / secrets
+# ─── .NET / ASP.NET Core (dotnet_backend) ─────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.nupkg
+TestResults/
+
+# ─── React (web_frontend) ─────────────────────────────────────────────
+web_frontend/node_modules/
+web_frontend/dist/
+web_frontend/.vite/
+
+# ─── Flutter (mobile_app) ─────────────────────────────────────────────
+mobile_app/.dart_tool/
+mobile_app/.flutter-plugins
+mobile_app/.flutter-plugins-dependencies
+mobile_app/build/
+mobile_app/android/.gradle/
+mobile_app/android/local.properties
+mobile_app/android/app/debug/
+mobile_app/android/app/profile/
+mobile_app/android/app/release/
+mobile_app/.packages
+mobile_app/pubspec.lock
+
+# ─── Environment / secrets ────────────────────────────────────────────
 .env
 *.env
 
-# Database
+# ─── Database ─────────────────────────────────────────────────────────
 *.db
 *.sqlite3
+*.mdf
+*.ldf
 
-# IDE
+# ─── IDE / OS ─────────────────────────────────────────────────────────
 .idea/
 .vscode/
 *.swp
-
-# OS
 .DS_Store
 Thumbs.db
+
+# ─── Build artifacts ──────────────────────────────────────────────────
+dist/
+build/

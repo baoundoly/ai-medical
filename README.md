@@ -4,6 +4,291 @@ An AI-powered Clinical Workflow Operating System for doctors, assistants, clinic
 
 ---
 
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Clients                              │
+│  ┌────────────────┐          ┌──────────────────────────┐   │
+│  │  Flutter App   │          │     React Web App        │   │
+│  │  (Mobile iOS/  │          │  (Vite + TypeScript +    │   │
+│  │   Android)     │          │   Tailwind CSS)          │   │
+│  └───────┬────────┘          └───────────┬──────────────┘   │
+└──────────┼────────────────────────────────┼─────────────────┘
+           │  REST / JWT Bearer             │
+           ▼                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│              ASP.NET Core 8 API Backend                     │
+│  Controllers → Services → EF Core → MS SQL Server          │
+│  Modules: Auth, Patients, Visits, Appointments,             │
+│           Prescriptions, Lab Reports, Vitals, EMR,          │
+│           Pharmacy, Billing, Analytics, Notifications       │
+└───────────────────────────────┬─────────────────────────────┘
+                                │  HTTP (internal)
+                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│             Python FastAPI AI Layer                         │
+│  • Bangla speech transcription (Whisper stub)              │
+│  • Bangla medical NLP (30+ term dictionary)                 │
+│  • Differential diagnosis suggestions                       │
+│  • Drug interaction checks                                  │
+│  • NEWS2 vitals scoring                                     │
+│  • Critical lab alert detection                             │
+└─────────────────────────────────────────────────────────────┘
+           │
+           ▼
+┌──────────────────────────┐
+│   Microsoft SQL Server   │
+│   (via EF Core + MSSQL)  │
+└──────────────────────────┘
+```
+
+---
+
+## Repository Structure
+
+```
+ai-medical/
+├── dotnet_backend/        ← ASP.NET Core 8 API (primary backend)
+├── ai_layer/              ← Python FastAPI AI microservice
+├── web_frontend/          ← React + Vite + TypeScript web app
+├── mobile_app/            ← Flutter mobile app (iOS + Android)
+└── backend/               ← (legacy) original Python FastAPI backend
+```
+
+---
+
+## Components
+
+### 1. ASP.NET Core Backend (`dotnet_backend/`)
+
+**Tech:** .NET 8, EF Core 8, SQL Server, JWT Bearer, BCrypt, Swagger
+
+#### Quick Start
+```bash
+cd dotnet_backend/src/AIMedical.Api
+# Update connection string in appsettings.json
+dotnet ef database update    # run migrations
+dotnet run                   # starts on http://localhost:5000
+```
+
+#### Run tests
+```bash
+cd dotnet_backend
+dotnet test AIMedical.sln
+```
+
+#### Swagger UI
+Open http://localhost:5000/swagger when running in Development mode.
+
+#### Key features
+| Feature | Detail |
+|---------|--------|
+| Authentication | JWT Bearer + BCrypt password hashing |
+| Authorization | 9 roles (SuperAdmin → Patient), role guards on controllers |
+| Patient IDs | Format: `HSP-DHK-2026-000001` — never reused |
+| Prescription signing | Doctor role required; stores HMAC signature hash |
+| Audit logging | AuditMiddleware logs every mutation with user/IP/timestamp |
+| Multi-tenant | All queries filtered by `tenantId` claim from JWT |
+| AI integration | `AiService` HTTP client calls Python AI layer |
+| EMR immutability | Visits locked after doctor approval |
+
+---
+
+### 2. Python AI Layer (`ai_layer/`)
+
+**Tech:** Python 3.12, FastAPI, SQLAlchemy, Pydantic v2
+
+#### Quick Start
+```bash
+cd ai_layer
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --reload --port 8000
+```
+
+#### Run tests
+```bash
+cd ai_layer
+pytest tests/ -v
+```
+
+#### AI capabilities
+| Module | Description |
+|--------|-------------|
+| Bangla NLP | 30+ medical term dictionary (বুক ধড়ফড় → Palpitation) |
+| Transcription | Whisper-compatible stub — replace with real Whisper/STT |
+| Diagnosis | Rule-based differential diagnosis suggestions |
+| Red-flag detection | Detects chest pain, stroke, sepsis keywords |
+| Drug interactions | 8 known dangerous pairs (warfarin+aspirin, etc.) |
+| NEWS2 scoring | Standard early-warning score from vitals |
+| Critical labs | Auto-detects critical platelet/troponin/glucose values |
+
+---
+
+### 3. React Web App (`web_frontend/`)
+
+**Tech:** React 18, TypeScript, Vite, Tailwind CSS, React Router v6, Axios, Recharts
+
+#### Quick Start
+```bash
+cd web_frontend
+npm install
+npm run dev    # starts on http://localhost:3000
+```
+
+#### Build for production
+```bash
+npm run build
+```
+
+#### Pages
+| Route | Page | Roles |
+|-------|------|-------|
+| `/login` | Login | All |
+| `/dashboard` | Dashboard with stats | All |
+| `/patients` | Patient list + registration | Doctor/Assistant/Receptionist |
+| `/patients/:id` | Patient detail (tabbed) | Doctor/Assistant |
+| `/visits` | Visit list | Doctor/Assistant |
+| `/visits/:id` | Visit detail + approve | Doctor |
+| `/appointments` | Queue + booking | All |
+| `/prescriptions` | Prescriptions + sign | Doctor |
+| `/emr/:id` | Full EMR timeline | Doctor |
+| `/analytics` | Charts + metrics | Admin/Doctor |
+
+---
+
+### 4. Flutter Mobile App (`mobile_app/`)
+
+**Tech:** Flutter 3.22, Dart 3.4, Provider, GoRouter, Dio, flutter_secure_storage
+
+#### Quick Start
+```bash
+cd mobile_app
+flutter pub get
+flutter run    # connect a device or emulator first
+```
+
+#### Supported platforms
+- Android (minSdk 21)
+- iOS (coming soon — no iOS-specific config yet)
+
+#### App features
+| Screen | Features |
+|--------|---------|
+| Login | Email/password, JWT stored in secure storage |
+| Dashboard | Stats cards, recent appointments, bottom nav |
+| Patients | Search, list, FAB to register, pull-to-refresh |
+| Patient Detail | Info + tabs: Visits, Prescriptions, Labs, Vitals |
+| Visits | Status filters, list, create new visit |
+| Visit Detail | AI Summary box, Approve button (Doctor only) |
+| Appointments | Token queue grid, emergency badges, booking |
+| Prescriptions | Medicine items, drug interaction warnings, sign button |
+| EMR Timeline | Color-coded event timeline |
+
+---
+
+## Database (MS SQL Server)
+
+The ASP.NET Core backend uses **EF Core 8** with the SQL Server provider.
+
+#### Setup
+1. Install SQL Server (or use Docker: `docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=YourPassword123!" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest`)
+2. Update `dotnet_backend/src/AIMedical.Api/appsettings.json`:
+   ```json
+   "ConnectionStrings": {
+     "DefaultConnection": "Server=localhost;Database=AIMedical;User Id=sa;Password=YourPassword123!;TrustServerCertificate=True;"
+   }
+   ```
+3. Run migrations: `dotnet ef database update`
+
+#### Core tables
+`Tenants`, `Users`, `Patients`, `Visits`, `Appointments`, `Prescriptions`, `PrescriptionItems`, `LabReports`, `VitalSigns`, `NewsScores`, `AuditLogs`, `Medicines`, `Invoices`
+
+---
+
+## User Roles & Permissions
+
+| Role | Capabilities |
+|------|-------------|
+| SuperAdmin | Full access to all tenants |
+| HospitalAdmin | Manage own tenant |
+| Doctor | Approve visits, sign prescriptions, add diagnosis |
+| Assistant | Create visits, record history, upload vitals (cannot finalize) |
+| Receptionist | Patient registration, appointments |
+| Nurse | Record vitals |
+| LabTechnician | Upload lab reports |
+| Pharmacist | View prescriptions, manage inventory |
+| Patient | View own records |
+
+---
+
+## AI Pipeline
+
+```
+Audio Input
+    ↓
+Speech-to-Text (Whisper stub → replace with real model)
+    ↓
+Speaker Identification [PATIENT] / [ASSISTANT] / [DOCTOR]
+    ↓
+Bangla Medical NLP (ai_layer/app/services/ai_service.py)
+    ↓
+Symptom Extraction
+    ↓
+Differential Diagnosis Suggestions
+    ↓
+Drug Interaction Check
+    ↓
+Doctor Validation → /api/visits/{id}/approve
+    ↓
+Final EMR Record (immutable)
+```
+
+---
+
+## Recommended Rollout (Phased)
+
+| Phase | Focus | Components |
+|-------|-------|-----------|
+| 1 | Auth + Patient management | dotnet_backend + web_frontend login/patients |
+| 2 | AI voice intake + transcription | ai_layer + mobile_app recording |
+| 3 | Medical summary + diagnosis support | ai_layer NLP + web_frontend visits |
+| 4 | Prescription AI + drug interactions | dotnet_backend prescriptions + mobile_app |
+| 5 | Hospital ERP + analytics | billing + analytics dashboards |
+
+---
+
+## Environment Variables
+
+### ASP.NET Core (`dotnet_backend/src/AIMedical.Api/appsettings.json`)
+```json
+{
+  "ConnectionStrings": { "DefaultConnection": "..." },
+  "JwtSettings": { "SecretKey": "...", "Issuer": "AIMedical", "Audience": "AIMedicalUsers", "ExpiryMinutes": 60 },
+  "AiLayerUrl": "http://localhost:8000"
+}
+```
+
+### Python AI Layer (`ai_layer/.env`)
+```
+DATABASE_URL=mssql+pyodbc://...
+SECRET_KEY=your-secret-key
+```
+
+### React Web (`web_frontend/.env`)
+```
+VITE_API_URL=http://localhost:5000
+```
+
+### Flutter Mobile (`mobile_app/lib/core/constants.dart`)
+```dart
+static const String baseUrl = 'http://10.0.2.2:5000/api';  // Android emulator
+```
+
+
+---
+
 ## Features
 
 | Module | Highlights |
