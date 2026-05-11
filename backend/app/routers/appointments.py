@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -114,7 +114,7 @@ def today_queue(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     appts = (
         db.query(Appointment)
         .filter(

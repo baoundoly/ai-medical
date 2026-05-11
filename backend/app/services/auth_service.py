@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -101,11 +101,11 @@ def register_device(
             user_id=user.id,
             device_fingerprint=fingerprint,
             ip_address=ip_address,
-            last_seen=datetime.utcnow(),
+            last_seen=datetime.now(timezone.utc),
         )
         db.add(device)
     else:
-        device.last_seen = datetime.utcnow()
+        device.last_seen = datetime.now(timezone.utc)
         if ip_address:
             device.ip_address = ip_address
     db.commit()

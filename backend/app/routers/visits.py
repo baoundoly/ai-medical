@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -32,7 +32,7 @@ def create_visit(
     visit = Visit(
         **payload.model_dump(),
         assistant_id=current_user.id if current_user.role == Role.assistant else None,
-        visit_date=datetime.utcnow(),
+        visit_date=datetime.now(timezone.utc),
         status="open",
     )
     db.add(visit)
@@ -116,7 +116,7 @@ def approve_visit(
         raise HTTPException(status_code=404, detail="Visit not found")
     if visit.doctor_approved_at:
         raise HTTPException(status_code=400, detail="Visit already approved")
-    visit.doctor_approved_at = datetime.utcnow()
+    visit.doctor_approved_at = datetime.now(timezone.utc)
     visit.doctor_approved_by = current_user.id
     visit.status = "approved"
     db.commit()

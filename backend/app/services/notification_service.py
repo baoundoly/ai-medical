@@ -2,8 +2,11 @@
 Notification service — stub implementation.
 In production, wire to email (SendGrid/SES), SMS (Twilio/BDApps), push notifications.
 """
-from datetime import datetime
+import logging
+from datetime import datetime, timezone
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 
 class NotificationChannel:
@@ -26,11 +29,11 @@ def send_notification(
         "title": title,
         "channel": channel,
         "data": data or {},
-        "sent_at": datetime.utcnow().isoformat(),
+        "sent_at": datetime.now(timezone.utc).isoformat(),
         "status": "sent",
     }
     # TODO: replace with real delivery mechanism (email/SMS/push)
-    print(f"[NOTIFICATION] {channel.upper()} → user {recipient_id}: {title}")
+    logger.info("[NOTIFICATION] %s → %s", channel.upper(), title)
     return payload
 
 

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
@@ -11,7 +11,7 @@ def generate_patient_uid(db: Session, tenant_code: str, city_code: str) -> str:
     {TENANT_CODE}-{CITY}-{YEAR}-{6-digit-sequence}
     e.g. HSP-DHK-2026-000001
     """
-    year = datetime.utcnow().year
+    year = datetime.now(timezone.utc).year
     prefix = f"{tenant_code.upper()}-{city_code.upper()}-{year}"
 
     # Count existing patients with this year's prefix to get next sequence

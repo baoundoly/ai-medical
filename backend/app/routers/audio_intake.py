@@ -1,7 +1,7 @@
 """
 Audio intake router: upload consent, trigger transcription + AI summarisation.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -59,7 +59,7 @@ def set_consent(
     if not record:
         raise HTTPException(status_code=404, detail="Audio record not found")
     record.consent_given = payload.consent_given
-    record.consent_time = datetime.utcnow() if payload.consent_given else None
+    record.consent_time = datetime.now(timezone.utc) if payload.consent_given else None
     db.commit()
     db.refresh(record)
     return record

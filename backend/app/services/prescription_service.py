@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -21,7 +21,7 @@ def create_prescription(
         patient_id=patient_id,
         doctor_id=doctor_id,
         status="draft",
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     db.add(prescription)
     db.flush()  # Get prescription.id before adding items
@@ -55,13 +55,13 @@ def sign_prescription(
     signature_method: str,
 ) -> Prescription:
     """Sign a prescription, generating a digital signature hash."""
-    timestamp = datetime.utcnow().isoformat()
+    timestamp = datetime.now(timezone.utc).isoformat()
     signature_hash = generate_digital_signature(
         prescription.id, doctor_id, timestamp
     )
     prescription.digital_signature_hash = signature_hash
     prescription.signature_method = signature_method
-    prescription.signed_at = datetime.utcnow()
+    prescription.signed_at = datetime.now(timezone.utc)
     prescription.status = "approved"
     db.commit()
     db.refresh(prescription)
