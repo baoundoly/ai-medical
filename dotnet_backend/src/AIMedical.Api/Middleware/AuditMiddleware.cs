@@ -52,8 +52,12 @@ public class AuditMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Audit log write failed for {Method} {Path}",
-                method, context.Request.Path);
+            // Sanitize user-controlled values before logging to prevent log-forging.
+            var safeMethod = method.Replace(Environment.NewLine, "").Replace("\r", "").Replace("\n", "");
+            var safePath = (context.Request.Path.Value ?? string.Empty)
+                .Replace(Environment.NewLine, "").Replace("\r", "").Replace("\n", "");
+
+            _logger.LogWarning(ex, "Audit log write failed for {Method} {Path}", safeMethod, safePath);
         }
     }
 
