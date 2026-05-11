@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -22,7 +22,7 @@ class Patient(Base):
     emergency_contact_name = Column(String(255), nullable=True)
     emergency_contact_phone = Column(String(20), nullable=True)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     tenant = relationship("Tenant", back_populates="patients")
     allergies = relationship("PatientAllergy", back_populates="patient", cascade="all, delete-orphan")
@@ -42,7 +42,7 @@ class PatientAllergy(Base):
     severity = Column(String(20), nullable=True)  # mild, moderate, severe
     reaction = Column(Text, nullable=True)
     noted_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    noted_at = Column(DateTime, default=datetime.utcnow)
+    noted_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     patient = relationship("Patient", back_populates="allergies")
     noted_by = relationship("User", foreign_keys=[noted_by_id])
@@ -59,7 +59,7 @@ class MergeRequest(Base):
     approved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     status = Column(String(20), default="pending")  # pending, approved, rejected
     reason = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     resolved_at = Column(DateTime, nullable=True)
 
     source_patient = relationship("Patient", foreign_keys=[source_patient_id])

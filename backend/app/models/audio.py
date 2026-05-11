@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -17,7 +17,7 @@ class AudioRecord(Base):
     status = Column(String(20), default="pending")  # pending/processing/completed/failed
     consent_given = Column(Boolean, default=False)
     consent_time = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     visit = relationship("Visit", back_populates="audio_records")
     transcription = relationship("Transcription", back_populates="audio_record", uselist=False)
@@ -33,7 +33,7 @@ class Transcription(Base):
     processed_text = Column(Text, nullable=True)
     confidence_score = Column(Float, nullable=True)
     language = Column(String(10), default="bn")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     audio_record = relationship("AudioRecord", back_populates="transcription")
     segments = relationship("TranscriptionSegment", back_populates="transcription", cascade="all, delete-orphan")
@@ -66,7 +66,7 @@ class AISummary(Base):
     confidence_score = Column(Float, nullable=True)
     doctor_reviewed = Column(Boolean, default=False)
     doctor_corrections_json = Column(Text, nullable=True)  # Doctor's corrections for retraining
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     visit = relationship("Visit", back_populates="ai_summaries")
     audio_record = relationship("AudioRecord", back_populates="ai_summaries")

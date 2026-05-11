@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -19,6 +19,6 @@ class AuditLog(Base):
     new_value_json = Column(Text, nullable=True)
     ip_address = Column(String(45), nullable=True)
     device_fingerprint = Column(String(255), nullable=True)
-    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
     user = relationship("User", back_populates="audit_logs", foreign_keys=[user_id])

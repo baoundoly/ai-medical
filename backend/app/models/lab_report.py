@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -19,7 +19,7 @@ class LabReport(Base):
     ai_analysis = Column(Text, nullable=True)
     is_critical = Column(Boolean, default=False)
     critical_alert_sent = Column(Boolean, default=False)
-    uploaded_at = Column(DateTime, default=datetime.utcnow)
+    uploaded_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     visit = relationship("Visit", back_populates="lab_reports")
     patient = relationship("Patient", back_populates="lab_reports")

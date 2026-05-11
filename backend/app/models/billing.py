@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -20,7 +20,7 @@ class Invoice(Base):
     status = Column(String(20), default="pending")  # pending/paid/partially_paid/cancelled
     payment_method = Column(String(50), nullable=True)  # cash/card/mobile_banking
     notes = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     patient = relationship("Patient", back_populates="invoices")
     visit = relationship("Visit", back_populates="invoices")
@@ -36,6 +36,6 @@ class Payment(Base):
     payment_method = Column(String(50), nullable=False)
     transaction_id = Column(String(255), nullable=True)
     status = Column(String(20), default="pending")  # pending/completed/failed/refunded
-    processed_at = Column(DateTime, default=datetime.utcnow)
+    processed_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     invoice = relationship("Invoice", back_populates="payments")

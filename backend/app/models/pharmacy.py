@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -31,7 +31,7 @@ class Dispensing(Base):
     prescription_id = Column(Integer, ForeignKey("prescriptions.id"), nullable=False, index=True)
     medicine_id = Column(Integer, ForeignKey("medicines.id"), nullable=True)
     dispensed_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    dispensed_at = Column(DateTime, default=datetime.utcnow)
+    dispensed_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     items_json = Column(Text, nullable=True)  # JSON of dispensed items with quantities
     notes = Column(Text, nullable=True)
 

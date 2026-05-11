@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -14,7 +14,7 @@ class Visit(Base):
     patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False, index=True)
     doctor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     assistant_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    visit_date = Column(DateTime, default=datetime.utcnow)
+    visit_date = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     status = Column(String(20), default="pending")  # pending/in_progress/completed
     chief_complaint = Column(Text, nullable=True)
     hpi = Column(Text, nullable=True)            # History of Present Illness

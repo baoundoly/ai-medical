@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -15,7 +15,7 @@ class Tenant(Base):
     address = Column(Text, nullable=True)
     subscription_plan = Column(String(50), default="basic")
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     users = relationship("User", back_populates="tenant", foreign_keys="User.tenant_id")
     settings = relationship("TenantSettings", back_populates="tenant", cascade="all, delete-orphan")

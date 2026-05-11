@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
@@ -23,7 +23,7 @@ class VitalSigns(Base):
     bmi = Column(Float, nullable=True)
     respiratory_rate = Column(Integer, nullable=True)  # breaths/min
     consciousness = Column(String(20), nullable=True)  # Alert/Voice/Pain/Unresponsive
-    recorded_at = Column(DateTime, default=datetime.utcnow)
+    recorded_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     visit = relationship("Visit", back_populates="vitals")
     patient = relationship("Patient", back_populates="vitals")
@@ -38,6 +38,6 @@ class NewsScore(Base):
     vital_id = Column(Integer, ForeignKey("vital_signs.id"), nullable=False, unique=True)
     score = Column(Integer, nullable=False)
     risk_level = Column(String(20), nullable=False)  # Low/Medium/High
-    calculated_at = Column(DateTime, default=datetime.utcnow)
+    calculated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     vital = relationship("VitalSigns", back_populates="news_score")

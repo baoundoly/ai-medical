@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -17,7 +17,7 @@ class Prescription(Base):
     signed_at = Column(DateTime, nullable=True)
     signature_method = Column(String(20), nullable=True)  # password/biometric/otp
     digital_signature_hash = Column(String(512), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     visit = relationship("Visit", back_populates="prescriptions")
     patient = relationship("Patient")
